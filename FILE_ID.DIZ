@@ -1,0 +1,7 @@
+(v1.15) Magic Assembler
+Simple 8086 assembler, which can produce as
+well as COM files as boot sector programs,
+and print the sources including correct
+addresses.
+Programmer: Bert Greevenbosch
+Released under the 3-Clause BSD License

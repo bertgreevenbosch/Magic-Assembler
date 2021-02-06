@@ -1,0 +1,170 @@
+Magic Assembler v1.15 - Documentation                                         I
+═══════════════════════════════════════════════════════════════════════════════
+BSD 3-Clause License
+
+Copyright 1994-2021 Bert Greevenbosch
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+═══════════════════════════════════════════════════════════════════════════════
+Changes since version 1.12
+- Release under The 3-Clause BSD License
+- Released source code
+═══════════════════════════════════════════════════════════════════════════════
+NOTE BY THE AUTHOR:
+
+I developed this software mainly in the 90s of the 20th century in my spare
+time. It hasn't changed much since, and hence the source code is a good
+reflection of how I coded _at that time_. 
+
+It is however no reflection of my current coding style and skills, and as a
+professional developer I would like to emphasise on this.
+
+It is a pleasure to release this new version with source code and I sincerely
+hope the open source community will benefit from it.
+
+The rest of the document continues with the original text from v1.12, with
+only a few minor modifications.
+
+                                                              Bert Greevenbosch
+═══════════════════════════════════════════════════════════════════════════════
+Magic Assembler is a freeware assembly language compiler, which can produce as
+well as COM files as boot sector programs. Compiling to COM files can be done
+using the following command line:
+┌────────────────┐
+│ ASM MYPROG.ASM │
+└────────────────┘
+To put the program in the boot sector of a disk which is in drive A, the use 
+this command line:
+┌────────────────────┐
+│ ASM MYPROG.ASM B:A │
+└────────────────────┘
+Note that if you want to make a boot program, you should include a code like
+this:
+┌─────────────────────────┐
+│         mov     ax,07c0 │
+│         mov     ds,ax   │
+│         mov     es,ax   │
+│         mov     ss,ax   │
+└─────────────────────────┘
+This is because DOS isn't loaded, so DOS cannot do the correct memory settings
+before running the program. All bootsector programs are loaded at 07c0:0000, so
+that's why this code should be included. Note that the program automaticly 
+supports MS-DOS disks, so reads the first two bytes, which contain an JMP code,
+and let the program start at the address the JMP code points to. The program
+also puts at the last two bytes the code 55aa, which indicates that the boot
+sector is bootable. The problem is, that if you use the DOS compatibility mode,
+you cannot use all 512 bytes, but (calculated with my MS-DOS v5.0), 448 bytes.
+If you want to use all 512 bytes, you should compile using the 'I' option.
+If you want to compile a program and print the source with the right addresses,
+use the 'P' parameter:
+┌──────────────────┐
+│ ASM MYPROG.ASM P │
+└──────────────────┘
+This can also be done with a boot sector program, then the command line could
+be for example this:
+┌─────────────────────┐
+│ ASM MYPROG.ASM B:AP │
+└─────────────────────┘
+═══════════════════════════════════════════════════════════════════════════════
+The commands included with this assembler are the standard assembly commands,
+but there are some exeptions. There are three different JMP commands, and two
+different CALL commands. Below the difference are discussed:
+
+JMPS    jumps 128 bytes back to 127 bytes further, and uses 2 bytes of code.
+JMP     jumps 32768 bytes back to 32767 bytes further, and uses 3 bytes of 
+        code.
+JMPF    jumps to every possible place in the low memory, and uses 5 bytes of 
+        code.
+CALL    see JMP, but with this the RET function can be used.
+CALLF   see JMPF, but with this the RET function can be used.
+═══════════════════════════════════════════════════════════════════════════════
+Variables can be declared with the following functions:
+
+DB      byte(s)         declares a byte, but can also be used to declare 
+                        multiple bytes.
+DW      word(s)         declares a word, but can also be used to declare 
+                        mutiple words.
+DS      x bytes         declares a free array of x bytes.
+DBE     filename.ext    this function puts a file in the compiled version, 
+                        supposing that the file is build of bytes.
+DWE     filename.ext    this function puts a file in the compiled version, 
+                        supposing that the file is build of words.
+
+With DB and DW you can also put a ? instead of a value.
+If you want to declare data, for which only space in memory must be reserved,
+but no space on disk, you should put them on the end of the source. Before you
+declare that data you must put an empty line before them, containing only a '-'
+at the first place. See the example programs for details.
+═══════════════════════════════════════════════════════════════════════════════
+You do not need to tell the assembler that a procedure is a procedure, so you
+can declare a procedure like this:
+┌─────────────────────────┐
+│ cls     mov     ax,0003 │
+│         int     10      │
+│         ret             │
+└─────────────────────────┘
+You can then in the program put the line
+┌─────────────────────┐
+│         call    cls │
+└─────────────────────┘
+═══════════════════════════════════════════════════════════════════════════════
+Standard, all numbers must be in hexadecimal. But, it is possible to work with
+binary and decimal numbers too: just put '%b' before the binary number or '%d'
+before the decimal number. For example, these three commands have exactly the
+same meaning:
+┌──────────────────────────────────────┐
+│        mov     ax,4c00               │
+│        mov     ax,%d19456            │
+│        mov     ax,%b0100110000000000 │
+└──────────────────────────────────────┘
+═══════════════════════════════════════════════════════════════════════════════
+It is also possible to write the numbers in a standard form, which is used by 
+most other assemblers. When you want so, you should add an 'n' as the parameter
+to the compiler:
+┌──────────────────┐
+│ ASM MYPROG.ASM N │
+└──────────────────┘
+If you want to use this mode, you should put an 'h' behind a hexadecimal 
+number, and a 'b' behind a binary number. For example, these three commands 
+have exactly have the same meaning:
+┌──────────────────────────────────────┐
+│        mov     ax,4c00h              │
+│        mov     ax,19456              │
+│        mov     ax,0100110000000000b  │
+└──────────────────────────────────────┘
+═══════════════════════════════════════════════════════════════════════════════
+It is possible to make calculations with constant numbers. For example, the
+following calculation can be done:
+┌────────────────────────────┐
+│        mov     ax,(12+3)*8 │
+└────────────────────────────┘
+═══════════════════════════════════════════════════════════════════════════════
+I would like to use the last section of this document to thank all the people
+that have sent me mail containing bug reports, remarks or just wanted to let me
+know they liked using it. It has been a reason for me to keep trying to find 
+time to improve the Magic Assembler or to program/improve other of my programs.
+It is good to know there are still people programming in assembly language!
